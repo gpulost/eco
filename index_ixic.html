@@ -335,7 +335,7 @@
         async function loadData() {
             try {
                 console.log('开始加载CSV数据...');
-                const response = await fetch('nasdaq_index.csv');
+                const response = await fetch('data_nasdaq_index.csv');
                 if (!response.ok) {
                     throw new Error(`HTTP错误: ${response.status}`);
                 }
