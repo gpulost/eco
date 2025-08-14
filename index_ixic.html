@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>上证指数数据可视化 - Highcharts版</title>
-    <!-- Highcharts库 -->
-    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <title>纳斯达克指数数据可视化 - Highcharts版</title>
+    <!-- Highstock库 (包含所有功能) -->
+    <script src="https://code.highcharts.com/stock/highstock.js"></script>
     <script src="https://code.highcharts.com/modules/exporting.js"></script>
     <script src="https://code.highcharts.com/modules/export-data.js"></script>
     <script src="https://code.highcharts.com/modules/accessibility.js"></script>
-    <script src="https://code.highcharts.com/stock/highstock.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <style>
         * {
@@ -229,7 +228,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>上证指数数据可视化</h1>
+            <h1>纳斯达克指数数据可视化</h1>
             <p>专业级交互式图表与数据分析 - Powered by Highcharts</p>
         </div>
 
@@ -253,7 +252,6 @@
                 <label><input type="checkbox" id="showLow" checked> 最低</label>
                 <label><input type="checkbox" id="showClose" checked> 关盘</label>
                 <label><input type="checkbox" id="showAdjClose"> 调整后收盘价</label>
-                <label><input type="checkbox" id="showVolume"> 成交量</label>
             </div>
 
             <div class="control-group">
@@ -280,6 +278,8 @@
         <div class="chart-container">
             <div id="stockChart"></div>
         </div>
+
+
 
         <div class="table-container">
             <div class="loading" id="loading">正在加载数据...</div>
@@ -335,7 +335,7 @@
         async function loadData() {
             try {
                 console.log('开始加载CSV数据...');
-                const response = await fetch('shanghai_index.csv');
+                const response = await fetch('nasdaq_index.csv');
                 if (!response.ok) {
                     throw new Error(`HTTP错误: ${response.status}`);
                 }
@@ -442,27 +442,16 @@
                     yAxis: 0
                 });
             }
-            
-            if (document.getElementById('showVolume').checked) {
-                seriesData.push({
-                    name: '成交量',
-                    data: allData.map(item => [item.timestamp, item.volume]),
-                    color: '#DDA0DD',
-                    type: 'column',
-                    yAxis: 1,
-                    opacity: 0.3
-                });
-            }
 
             chart = Highcharts.stockChart('stockChart', {
                 chart: {
                     backgroundColor: '#ffffff',
                     borderRadius: 8,
-                    height: 600
+                    height: 650
                 },
                 
                 title: {
-                    text: '上证指数历史走势',
+                    text: '纳斯达克指数历史走势',
                     style: {
                         fontSize: '18px',
                         fontWeight: 'bold',
@@ -471,31 +460,46 @@
                 },
                 
                 subtitle: {
-                    text: '数据来源: Yahoo Finance | 支持缩放、平移、时间选择',
+                    text: '数据来源: Yahoo Finance | 拖拽选择区域缩放，使用底部Navigator选择时间范围',
                     style: {
                         color: '#666'
                     }
                 },
-                
+
                 navigator: {
                     enabled: true,
-                    height: 60,
+                    height: 50,
+                    margin: 10,
                     series: {
                         data: allData.map(item => [item.timestamp, item.close]),
+                        type: 'areaspline',
                         color: '#667eea',
                         fillOpacity: 0.3,
                         lineWidth: 1
                     },
                     handles: {
                         backgroundColor: '#667eea',
-                        borderColor: '#667eea'
+                        borderColor: '#4a54d1',
+                        borderWidth: 1,
+                        width: 8,
+                        height: 16
                     },
                     outlineColor: '#667eea',
-                    maskFill: 'rgba(102, 126, 234, 0.1)'
+                    outlineWidth: 1,
+                    maskFill: 'rgba(102, 126, 234, 0.1)',
+                    xAxis: {
+                        labels: {
+                            style: {
+                                color: '#666',
+                                fontSize: '11px'
+                            }
+                        }
+                    }
                 },
-                
+
                 scrollbar: {
                     enabled: true,
+                    height: 8,
                     barBackgroundColor: '#e9ecef',
                     barBorderRadius: 4,
                     barBorderWidth: 0,
@@ -507,40 +511,17 @@
                     trackBorderColor: '#e9ecef',
                     trackBorderRadius: 4
                 },
-                
+
                 rangeSelector: {
                     enabled: true,
-                    buttons: [{
-                        type: 'month',
-                        count: 1,
-                        text: '1个月'
-                    }, {
-                        type: 'month',
-                        count: 3,
-                        text: '3个月'
-                    }, {
-                        type: 'month',
-                        count: 6,
-                        text: '6个月'
-                    }, {
-                        type: 'year',
-                        count: 1,
-                        text: '1年'
-                    }, {
-                        type: 'year',
-                        count: 3,
-                        text: '3年'
-                    }, {
-                        type: 'all',
-                        text: '全部'
-                    }],
                     selected: 5,
                     buttonTheme: {
                         fill: '#f8f9fa',
                         stroke: '#e9ecef',
                         'stroke-width': 1,
                         style: {
-                            color: '#495057'
+                            color: '#495057',
+                            fontSize: '12px'
                         },
                         states: {
                             select: {
@@ -548,9 +529,49 @@
                                 style: {
                                     color: 'white'
                                 }
+                            },
+                            hover: {
+                                fill: '#e3f2fd',
+                                style: {
+                                    color: '#495057'
+                                }
                             }
                         }
-                    }
+                    },
+                    buttons: [{
+                        type: 'month',
+                        count: 1,
+                        text: '1m'
+                    }, {
+                        type: 'month',
+                        count: 3,
+                        text: '3m'
+                    }, {
+                        type: 'month',
+                        count: 6,
+                        text: '6m'
+                    }, {
+                        type: 'ytd',
+                        text: 'YTD'
+                    }, {
+                        type: 'year',
+                        count: 1,
+                        text: '1y'
+                    }, {
+                        type: 'year',
+                        count: 2,
+                        text: '2y'
+                    }, {
+                        type: 'year',
+                        count: 5,
+                        text: '5y'
+                    }, {
+                        type: 'all',
+                        text: 'All'
+                    }],
+                    inputEnabled: true,
+                    inputDateFormat: '%Y-%m-%d',
+                    inputEditDateFormat: '%Y-%m-%d'
                 },
                 
                 xAxis: {
@@ -564,33 +585,24 @@
                             currentRange.max = e.max;
                             updateTableAndStats();
                         }
+                    },
+                    scrollbar: {
+                        enabled: true
+                    },
+                    labels: {
+                        format: '{value:%Y-%m-%d}'
                     }
                 },
                 
-                yAxis: [{
+                yAxis: {
                     title: {
                         text: '价格',
                         style: {
                             color: '#666'
                         }
                     },
-                    height: '70%',
-                    lineWidth: 1,
-                    resize: {
-                        enabled: true
-                    }
-                }, {
-                    title: {
-                        text: '成交量',
-                        style: {
-                            color: '#666'
-                        }
-                    },
-                    top: '75%',
-                    height: '25%',
-                    offset: 0,
                     lineWidth: 1
-                }],
+                },
                 
                 tooltip: {
                     split: true,
@@ -705,6 +717,8 @@
             });
         }
 
+
+
         // 更新图表
         function updateChart() {
             if (!chart) return;
@@ -753,17 +767,6 @@
                     data: allData.map(item => [item.timestamp, item.adjClose]),
                     color: '#FFEAA7',
                     yAxis: 0
-                });
-            }
-            
-            if (document.getElementById('showVolume').checked) {
-                seriesData.push({
-                    name: '成交量',
-                    data: allData.map(item => [item.timestamp, item.volume]),
-                    color: '#DDA0DD',
-                    type: 'column',
-                    yAxis: 1,
-                    opacity: 0.3
                 });
             }
             
@@ -932,7 +935,7 @@
                     }
                 });
                 
-                ['showOpen', 'showHigh', 'showLow', 'showClose', 'showAdjClose', 'showVolume'].forEach(id => {
+                ['showOpen', 'showHigh', 'showLow', 'showClose', 'showAdjClose'].forEach(id => {
                     document.getElementById(id).addEventListener('change', updateChart);
                 });
                 
@@ -952,9 +955,11 @@
                 document.getElementById('exportChart').addEventListener('click', () => {
                     chart.exportChart({
                         type: 'image/png',
-                        filename: '上证指数-' + new Date().toISOString().split('T')[0]
+                        filename: '纳斯达克指数-' + new Date().toISOString().split('T')[0]
                     });
                 });
+
+
                 
                 console.log('应用初始化完成');
             } catch (error) {
